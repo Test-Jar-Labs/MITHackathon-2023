@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace VRHack.Runner.Utils
+namespace MITHack.Robot.Utils
 {
     public static class CameraUtility
     {

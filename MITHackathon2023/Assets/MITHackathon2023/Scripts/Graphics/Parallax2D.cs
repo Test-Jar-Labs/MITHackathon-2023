@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
+using MITHack.Robot.Utils;
 using UnityEngine;
 using UnityEngine.Serialization;
-using VRHack.Runner.Utils;
 
-namespace VRHack.Runner.Graphics
+namespace MITHack.Robot.Graphics
 {
     [System.Serializable]
     public struct ParallaxLayer

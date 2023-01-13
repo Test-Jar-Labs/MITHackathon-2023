@@ -450,7 +450,7 @@ MonoBehaviour:
   priority: 0
   required: 0
   startInAR: 1
-  DisableBackgroundInAR: 1
+  DisableBackgroundInAR: 0
   onlyVRLayer: 10
   onlyARLayer: 11
   VisibleInFullARTag: FullARObject

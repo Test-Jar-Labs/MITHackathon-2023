@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace VRHack.Runner.Utils
+namespace MITHack.Robot.Utils
 {
     public class GenericSingleton<TSelf> : MonoBehaviour
         where TSelf : GenericSingleton<TSelf>
