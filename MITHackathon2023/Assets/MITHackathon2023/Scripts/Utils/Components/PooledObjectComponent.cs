@@ -1,17 +1,25 @@
 ﻿using MITHack.Robot.Spawner;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
 namespace MITHack.Robot.Utils.Components
 {
     public class PooledObjectComponent : MonoBehaviour, IPooledObject
     {
-        public IPooledObject.PooledObjectDelegate<PooledObjectComponent> initializedEvent;
-        public IPooledObject.PooledObjectDelegate<PooledObjectComponent> allocatedEvent;
-        public IPooledObject.PooledObjectDelegate<PooledObjectComponent> deallocatedEvent;
+        public struct PooledObjectSpawnContext
+        {
+            public Vector3? position;
+            public Quaternion? rotation;
+            public Vector3? scale;
+        }
+        
+        public IPooledObject.PooledObjectDelegate<PooledObjectComponent, PooledObjectSpawnContext> initializedEvent;
+        public IPooledObject.PooledObjectDelegate<PooledObjectComponent, PooledObjectSpawnContext> allocatedEvent;
+        public IPooledObject.PooledObjectDelegate<PooledObjectComponent, PooledObjectSpawnContext> deallocatedEvent;
 
-        private IObjectPool<PooledObjectComponent> _currentObjectPool = null;
+        private IObjectPool<PooledObjectComponent, PooledObjectSpawnContext> _currentObjectPool = null;
 
-        public IObjectPool<PooledObjectComponent> CurrentObjectPool => _currentObjectPool;
+        public IObjectPool<PooledObjectComponent, PooledObjectSpawnContext> CurrentObjectPool => _currentObjectPool;
 
         public void DeAllocate()
         {
@@ -22,9 +30,10 @@ namespace MITHack.Robot.Utils.Components
             }
         }
         
-        public void OnInitialized<TSelf>(IObjectPool<TSelf> pool)
+        public void OnInitialized<TSelf, TAllocContext>(IObjectPool<TSelf, TAllocContext> pool) 
+            where TAllocContext : struct
         {
-            if (pool is IObjectPool<PooledObjectComponent> pooledObjects)
+            if (pool is IObjectPool<PooledObjectComponent, PooledObjectSpawnContext> pooledObjects)
             {
                 _currentObjectPool = pooledObjects;
                 gameObject.SetActive(false);
@@ -32,18 +41,39 @@ namespace MITHack.Robot.Utils.Components
             }
         }
 
-        public void OnAllocated<TSelf>(IObjectPool<TSelf> pool)
+        public void OnAllocated<TSelf, TAllocContext>(IObjectPool<TSelf, TAllocContext> pool,
+            in TAllocContext allocContext)
+            where TAllocContext : struct
         {
-            if (pool is IObjectPool<PooledObjectComponent> pooledObjects)
+            if (pool is IObjectPool<PooledObjectComponent, PooledObjectSpawnContext> pooledObjects)
             {
+                // Already know that the type is a pooled object spawn context, so we can just cpy.
+                var cpy = allocContext;
+                var ctx = UnsafeUtility.As<TAllocContext, PooledObjectSpawnContext>(ref cpy);
+                
+                var cachedTransform = transform;
+                if (ctx.rotation.HasValue)
+                {
+                    cachedTransform.rotation = ctx.rotation.Value;
+                }
+                if (ctx.position.HasValue)
+                {
+                    cachedTransform.position = ctx.position.Value;
+                }
+                if (ctx.scale.HasValue)
+                {
+                    cachedTransform.localScale = ctx.scale.Value;
+                }
+
                 gameObject.SetActive(true);
                 allocatedEvent?.Invoke(pooledObjects);
             }
         }
 
-        public void OnDeAllocated<TSelf>(IObjectPool<TSelf> pool)
+        public void OnDeAllocated<TSelf, TAllocContext>(IObjectPool<TSelf, TAllocContext> pool) 
+            where TAllocContext : struct
         {
-            if (pool is IObjectPool<PooledObjectComponent> pooledObjects)
+            if (pool is IObjectPool<PooledObjectComponent, PooledObjectSpawnContext> pooledObjects)
             {
                 gameObject.SetActive(false);
                 deallocatedEvent?.Invoke(pooledObjects);
