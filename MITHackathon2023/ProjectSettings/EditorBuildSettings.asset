@@ -5,8 +5,11 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/MITHackathon2023/Scene/MainScene.unity
+  - enabled: 1
+    path: Assets/MITHackathon2023/Scene/Game_Master.unity
+    guid: b92a568f1a4c18247b7122a4bc942f89
+  - enabled: 1
+    path: Assets/MITHackathon2023/Scene/Environment_Scene.unity
     guid: b3f4d4376e5556d45910c7a2f94eaec1
   - enabled: 0
     path: Assets/Lynx/Samples/HandTracking/0. Base/Scenes/Unity Events.unity

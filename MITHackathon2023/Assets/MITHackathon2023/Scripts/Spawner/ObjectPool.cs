@@ -5,7 +5,7 @@ namespace MITHack.Robot.Spawner
     public interface IPooledObject
     {
         public delegate void PooledObjectDelegate<TSelf, out TObjectAllocContext>(IObjectPool<TSelf, TObjectAllocContext> pool) 
-            where TObjectAllocContext : struct;
+            where TObjectAllocContext : unmanaged;
 
         /// <summary>
         /// Deallocates the pooled object.
@@ -20,7 +20,7 @@ namespace MITHack.Robot.Spawner
         /// <typeparam name="TSelf">The object pool associated with the object.</typeparam>
         /// <typeparam name="TObjectAllocContext">The allocation context.</typeparam>
         public void OnInitialized<TSelf, TObjectAllocContext>(IObjectPool<TSelf, TObjectAllocContext> pool) 
-            where TObjectAllocContext : struct;
+            where TObjectAllocContext : unmanaged;
 
         /// <summary>
         /// Called when the object is allocated by the pool.
@@ -31,7 +31,7 @@ namespace MITHack.Robot.Spawner
         /// <typeparam name="TObjectAllocContext">The allocation context.</typeparam>
         public void OnAllocated<TSelf, TObjectAllocContext>(IObjectPool<TSelf, TObjectAllocContext> pool,
             in TObjectAllocContext context) 
-            where TObjectAllocContext : struct;
+            where TObjectAllocContext : unmanaged;
 
         /// <summary>
         /// Called when the object is allocated by the pool.
@@ -40,7 +40,7 @@ namespace MITHack.Robot.Spawner
         /// <typeparam name="TSelf">The type of deallocated object.</typeparam>
         /// <typeparam name="TObjectAllocContext">The allocation context.</typeparam>
         public void OnDeAllocated<TSelf, TObjectAllocContext>(IObjectPool<TSelf, TObjectAllocContext> pool) 
-            where TObjectAllocContext : struct;
+            where TObjectAllocContext : unmanaged;
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ namespace MITHack.Robot.Spawner
     public interface IObjectPool { }
 
     public interface IObjectPool<TObject, in TObjectAllocContext> : IObjectPool
-        where TObjectAllocContext : struct
+        where TObjectAllocContext : unmanaged
     {
         /// <summary>
         /// Allocates the object pool.
@@ -107,7 +107,7 @@ namespace MITHack.Robot.Spawner
     public class ObjectPoolInstance<TObjectPoolAllocator, TObject, TObjectAllocContext> : IObjectPool<TObject, TObjectAllocContext>
         where TObject : class
         where TObjectPoolAllocator : struct, IObjectPoolAllocator<TObject>
-        where TObjectAllocContext : struct
+        where TObjectAllocContext : unmanaged
     {
         private struct SpawnedObject
         {
