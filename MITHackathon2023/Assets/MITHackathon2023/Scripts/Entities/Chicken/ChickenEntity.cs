@@ -3,6 +3,7 @@ using MITHack.Robot.Spawner;
 using MITHack.Robot.Utils;
 using MITHack.Robot.Utils.Components;
 using UnityEngine;
+using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 namespace MITHack.Robot.Entities
@@ -10,6 +11,7 @@ namespace MITHack.Robot.Entities
     [RequireComponent(typeof(PooledObjectComponent))]
     public class ChickenEntity : MonoBehaviour
     {
+
         [Header("Variables")]
         [SerializeField, Min(1.0f)]
         private float maxLifeLength = 5.0f;
@@ -21,16 +23,31 @@ namespace MITHack.Robot.Entities
         [Space] 
         [SerializeField, Min(0.0f)] private float minForce;
         [SerializeField, Min(0.0f)] private float maxForce;
-        
+
+        [Header("Misc")] 
+        [SerializeField, Min(0.0f)]
+        private float targetEntityNormalOffset = 0.05f;
+        [SerializeField]
+        private Prefab<ChickenTarget> targetEntity;
+
         [Header("References")] 
         [SerializeField]
         private new Rigidbody rigidbody;
+        [SerializeField]
+        private CollisionEventsListener3D collisionEventsListener;
         
         private IPooledObject.PooledObjectDelegate<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> _allocatedDelegate;
         private IPooledObject.PooledObjectDelegate<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> _deallocatedDelegate;
-        
+
+        private CollisionEventsListener3D.CollisionEventsListenerGenericDelegate<
+            CollisionEventsListener3D.CollisionEventContext> _collisionEnterEvent;
+        private CollisionEventsListener3D.CollisionEventsListenerGenericDelegate<
+            CollisionEventsListener3D.TriggerEventContext> _triggerEnterEvent;
+
         private PooledObjectComponent _pooledObject;
         private float _currentLifeLength = 0.0f;
+
+        private bool _killedRobot = false;
 
         private Rigidbody Rigidbody => rigidbody ??= GetComponent<Rigidbody>();
         
@@ -39,6 +56,8 @@ namespace MITHack.Robot.Entities
             _pooledObject = GetComponent<PooledObjectComponent>();
             _allocatedDelegate = OnAllocated;
             _deallocatedDelegate = OnDeAllocated;
+            _collisionEnterEvent = OnCollisionEnter3D;
+            _triggerEnterEvent = OnTriggerEnter3D;
             _currentLifeLength = maxLifeLength;
         }
 
@@ -48,6 +67,14 @@ namespace MITHack.Robot.Entities
                 += _allocatedDelegate;
             _pooledObject.deallocatedEvent
                 += _deallocatedDelegate;
+
+            if (collisionEventsListener)
+            {
+                collisionEventsListener.CollisionEnterEvent
+                    += _collisionEnterEvent;
+                collisionEventsListener.TriggerEnterEvent
+                    += _triggerEnterEvent;
+            }
         }
 
         private void OnDisable()
@@ -56,6 +83,14 @@ namespace MITHack.Robot.Entities
                 -= _allocatedDelegate;
             _pooledObject.deallocatedEvent
                 -= _deallocatedDelegate;
+
+            if (collisionEventsListener)
+            {
+                collisionEventsListener.CollisionEnterEvent
+                    -= _collisionEnterEvent;
+                collisionEventsListener.TriggerExitEvent
+                    -= _triggerEnterEvent;
+            }
         }
 
         private void Update()
@@ -85,7 +120,8 @@ namespace MITHack.Robot.Entities
         private void OnAllocated(IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
         {
             _currentLifeLength = maxLifeLength;
-            ApplyForces(transform.position);
+            ApplyForces(transform.position, out var direction);
+            SpawnTarget(in direction);
         }
         
         private void OnDeAllocated(IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
@@ -95,26 +131,49 @@ namespace MITHack.Robot.Entities
             {
                 Rigidbody.velocity = Vector3.zero;
                 Rigidbody.angularVelocity = Vector3.zero;
+                Rigidbody.Sleep();
             }
         }
 
-        private void ApplyForces(Vector3 position)
+        private bool ApplyForces(Vector3 position, out Vector3 targetDirection)
         {
-            if (!Rigidbody) return;
+            if (!Rigidbody)
+            {
+                targetDirection = default;
+                return false;
+            }
 
             var cachedTransform = transform;
             cachedTransform.position = position;
             cachedTransform.rotation = Quaternion.identity;;
             
-            var direction = CalculateRandomDirection(position);
+            targetDirection = CalculateRandomDirection(position);
             var randomForce = Random.Range(minForce, maxForce);
-            Rigidbody.AddRelativeForce(direction * randomForce, ForceMode.Impulse);
+            Rigidbody.AddRelativeForce(targetDirection * randomForce, ForceMode.Impulse);
+            return true;
+        }
+
+        private void SpawnTarget(in Vector3 direction)
+        {
+            // Initializes the Chicken Target Pool.
+            ChickenTarget.Initialize(32, targetEntity);
+
+            if (Physics.Raycast(transform.position,
+                    direction, out var raycastHit))
+            {
+                var rotation = Quaternion.LookRotation(raycastHit.normal);
+                ChickenTarget.Allocate(new ChickenTarget.ChickenTargetAllocContext
+                {
+                    position = raycastHit.point + raycastHit.normal * targetEntityNormalOffset,
+                    rotation = rotation
+                });
+            }
         }
 
         private Vector3 CalculateRandomDirection(Vector3 position)
         {
             var referenceDirection = Vector3.down;
-            var droneEntity = DroneEntity.Get();
+            var droneEntity = RobotEntity.Get();
             if (droneEntity)
             {
                 referenceDirection = (droneEntity.transform.position - position);
@@ -128,6 +187,44 @@ namespace MITHack.Robot.Entities
                 * Quaternion.AngleAxis(randomAngleX, up)
                 * Quaternion.AngleAxis(randomAngleY, right);
             return randomRotation * Vector3.forward;
+        }
+
+        private void OnTriggerEnter3D(CollisionEventsListener3D.TriggerEventContext context)
+        {
+            TryCollide(context.otherCollider.gameObject);
+        }
+        
+        private void OnCollisionEnter3D(CollisionEventsListener3D.CollisionEventContext context)
+        {
+            TryCollide(context.collision.gameObject);
+        }
+
+        private void TryCollide(GameObject collidedGameObject)
+        {
+            if (!collidedGameObject)
+            {
+                return;
+            }
+            var robotEntity = collidedGameObject.GetComponent<RobotEntity>()
+                              ?? collidedGameObject.GetComponentInParent<RobotEntity>();
+            if (robotEntity
+                && !_killedRobot)
+            {
+                robotEntity.Kill();
+                _killedRobot = true;
+            }
+            // TODO: Explode
+        }
+
+        /// <summary>
+        /// Deallocates the chicken. Equivalent to destroy/dispose.
+        /// </summary>
+        public void DeAllocate()
+        {
+            if (_pooledObject)
+            {
+                _pooledObject.DeAllocate();
+            }
         }
 
         private void OnDrawGizmos()

@@ -31,7 +31,7 @@ namespace MITHack.Robot.Utils.Components
         }
         
         public void OnInitialized<TSelf, TAllocContext>(IObjectPool<TSelf, TAllocContext> pool) 
-            where TAllocContext : struct
+            where TAllocContext : unmanaged
         {
             if (pool is IObjectPool<PooledObjectComponent, PooledObjectSpawnContext> pooledObjects)
             {
@@ -43,7 +43,7 @@ namespace MITHack.Robot.Utils.Components
 
         public void OnAllocated<TSelf, TAllocContext>(IObjectPool<TSelf, TAllocContext> pool,
             in TAllocContext allocContext)
-            where TAllocContext : struct
+            where TAllocContext : unmanaged
         {
             if (pool is IObjectPool<PooledObjectComponent, PooledObjectSpawnContext> pooledObjects)
             {
@@ -71,7 +71,7 @@ namespace MITHack.Robot.Utils.Components
         }
 
         public void OnDeAllocated<TSelf, TAllocContext>(IObjectPool<TSelf, TAllocContext> pool) 
-            where TAllocContext : struct
+            where TAllocContext : unmanaged
         {
             if (pool is IObjectPool<PooledObjectComponent, PooledObjectSpawnContext> pooledObjects)
             {
