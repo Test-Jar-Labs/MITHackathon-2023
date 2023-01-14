@@ -1,14 +1,14 @@
 {
-    "scopedRegistries": [
-        {
-            "name": "Ultraleap",
-            "url": "https://package.openupm.com",
-            "scopes": [
-                "com.ultraleap"
-            ]
-        }
-    ],
-    "dependencies": {
+  "scopedRegistries": [
+    {
+      "name": "Ultraleap",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.ultraleap"
+      ]
+    }
+  ],
+  "dependencies": {
     "com.ptc.vuforia.engine": "file:com.ptc.vuforia.engine-10.12.3.tgz",
     "com.ultraleap.tracking.preview": "6.4.0",
     "com.unity.collab-proxy": "1.15.16",
