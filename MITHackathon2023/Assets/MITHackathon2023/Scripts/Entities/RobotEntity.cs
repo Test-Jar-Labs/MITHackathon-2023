@@ -53,12 +53,8 @@ namespace MITHack.Robot.Entities
                 return;
             }
             SetState(RobotEntityState.State_Dead);
-
-            var gameManager = GameManager.Get();
-            if (gameManager)
-            {
-                gameManager.InvokeOnRobotKilled();
-            }
+            // TODO: Animation
+            Revive();
         }
 
         public void Revive()

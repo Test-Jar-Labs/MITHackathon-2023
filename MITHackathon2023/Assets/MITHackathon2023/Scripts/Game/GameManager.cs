@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using MITHack.Robot.Entities;
 using MITHack.Robot.Utils;
 using UnityEngine;
 
@@ -24,6 +26,9 @@ namespace MITHack.Robot.Game
         [Header("Statistics")]
         [SerializeField, Min(1)]
         private int totalLives = 3;
+        [Space] 
+        [SerializeField, Min(0.0f)]
+        private float timeBetweenEachLife = 2.0f;
 
         [Header("References")] 
         [SerializeField]
@@ -31,8 +36,13 @@ namespace MITHack.Robot.Game
 
         private int _chickensKilled = 0;
         private int _currentLives = 0;
+        private float _currentAwaitingTime = 0.0f;
 
         private bool _spawnersEnabled = true;
+
+        private RobotEntity.RobotEntityGenericDelegate<RobotEntity.RobotEntityStateChangeContext> _onStateChange;
+
+        private RobotEntity RobotEntity => RobotEntity.Get<RobotEntity>();
 
         public bool SpawnersEnabled => _spawnersEnabled;
         
@@ -51,23 +61,52 @@ namespace MITHack.Robot.Game
         protected override void Awake()
         {
             base.Awake();
-            
+
+            _onStateChange = OnRobotStateChange;
             _chickensKilled = 0;
             _currentLives = totalLives;
             SetSpawnersEnabled(true);
         }
+
+        private void OnEnable()
+        {
+            if (RobotEntity)
+            {
+                RobotEntity.StateChangedEvent += _onStateChange;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (RobotEntity)
+            {
+                RobotEntity.StateChangedEvent -= _onStateChange;
+            }
+        }
+
+        private void Update()
+        {
+            if (_currentAwaitingTime > 0.0f)
+            {
+                _currentAwaitingTime -= Time.deltaTime;
+                if (_currentAwaitingTime <= 0.0f)
+                {
+                    ResumeGameOnLifeLost();
+                }
+            }
+        }
         
-        public void AddLives(int lives)
+        private void AddLives(int lives)
         {
             SetCurrentLives(_currentLives + lives);
         }
 
-        public void RemoveLives(int lives)
+        private void RemoveLives(int lives)
         {
             SetCurrentLives(_currentLives - lives);
         }
         
-        public void SetCurrentLives(int currentLives)
+        private void SetCurrentLives(int currentLives)
         {
             if (_currentLives != currentLives)
             {
@@ -80,7 +119,7 @@ namespace MITHack.Robot.Game
             _currentLives = currentLives;
         }
 
-        public void SetSpawnersEnabled(bool spawnersEnabled)
+        private void SetSpawnersEnabled(bool spawnersEnabled)
         {
             SetSpawnersEnabled(spawnersEnabled,  false);
         }
@@ -95,12 +134,26 @@ namespace MITHack.Robot.Game
             _spawnersEnabled = spawnersEnabled;
         }
 
-        public void InvokeOnRobotKilled()
+
+        private void OnRobotStateChange(RobotEntity.RobotEntityStateChangeContext context)
+        {
+            if (context.next == RobotEntity.RobotEntityState.State_Dead)
+            {
+                StopGameOnLifeLost();
+            }
+        }
+
+        private void ResumeGameOnLifeLost()
+        {
+            SetSpawnersEnabled(true);
+            _currentAwaitingTime = 0.0f;
+        }
+        
+        private void StopGameOnLifeLost()
         {
             RemoveLives(1);
             SetSpawnersEnabled(false);
-            
-            // TODO: Should probably 
+            _currentAwaitingTime = timeBetweenEachLife;
         }
     }
 }
