@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using MITHack.Robot.Utils.Components;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 namespace MITHack.Robot.Spawner
@@ -26,7 +28,48 @@ namespace MITHack.Robot.Spawner
             [InspectorName("Spawner Delay")]
             State_SpawnerDelay
         }
-        
+
+        /// <summary>
+        /// The allocator for the prefab spawner.
+        /// </summary>
+        [System.Serializable]
+        public struct PrefabSpawnerAllocator : IObjectPoolAllocator<PooledObjectComponent>, ISerializationCallbackReceiver
+        {
+            [SerializeField]
+            private GameObject prefab;
+            
+            public PooledObjectComponent Allocate()
+            {
+                Debug.Assert(prefab, "Prefab Must Exist for this Allocator.");
+                var allocated = Object.Instantiate(prefab);
+                if (!allocated) return null;
+                var allocatedObject = allocated.GetComponent<PooledObjectComponent>();
+                return allocatedObject;
+            }
+
+            public void DeAllocate(ref PooledObjectComponent obj)
+            {
+                Object.Destroy(obj.gameObject);
+                obj = null;
+            }
+
+            public void OnBeforeSerialize()
+            {
+                if (prefab)
+                {
+                    var pooledObject = prefab.GetComponent<PooledObjectComponent>();
+                    if (!pooledObject)
+                    {
+                        prefab = null;
+                    }
+                }
+            }
+
+            public void OnAfterDeserialize()
+            {
+            }
+        }
+
         #endregion
         
         [Header("Variables")] 
@@ -42,16 +85,20 @@ namespace MITHack.Robot.Spawner
         private int totalNumberSpawnedBetweenTimeChange = 3;
         [FormerlySerializedAs("totalTimeSubtracted")] [SerializeField, Min(0.1f)]
         private float totalTimeDiffSubtracted = 0.5f;
-        
-        [Header("Spawner Variables")]
+
+        [Header("Spawner Variables")] 
+        [SerializeField, Min(1)]
+        private int totalPrefabs = 32;
         [SerializeField]
-        private GameObject prefab;
+        private PrefabSpawnerAllocator prefab;
         [Space] 
         [SerializeField]
         private SpawnerSpawnType spawnType;
         [SerializeField]
         private List<Transform> spawnPoints;
 
+
+        private ObjectPoolInstance<PrefabSpawnerAllocator, PooledObjectComponent> _prefabObjectPool;
         private SpawnerState _spawnerState = SpawnerState.State_InitialDelay;
         private int _totalSpawned = 0;
         private float _totalSpawnTimeDifference = 0.0f;
@@ -60,12 +107,24 @@ namespace MITHack.Robot.Spawner
         private int _lastSpawnPoint = -1;
 
         public int TotalSpawned => _totalSpawned;
-        
+
+        private void Awake()
+        {
+            _prefabObjectPool ??= new ObjectPoolInstance<PrefabSpawnerAllocator, PooledObjectComponent>(
+                totalPrefabs, prefab);
+        }
+
         private void Start()
         {
             _totalSpawnTimeDifference = _currentTimeDifference = minSpawnDelay;
+            _prefabObjectPool?.Initialize();
         }
-        
+
+        private void OnDestroy()
+        {
+            _prefabObjectPool?.DeInitialize();
+        }
+
         private void Update()
         {
             UpdateSpawnerTime(Time.deltaTime);
@@ -114,20 +173,21 @@ namespace MITHack.Robot.Spawner
 
         private bool Spawn()
         { 
-            if (!prefab)
-            {
-                return false;
-            }
             var selectSpawnPoint = SelectSpawnPoint();
             if (!selectSpawnPoint)
             {
                 return false;
             }
-            var instantiated = GameObject.Instantiate(prefab);
-            var instantiatedTransform = instantiated.transform;
-            instantiatedTransform.position = selectSpawnPoint.position;
-            instantiatedTransform.rotation = selectSpawnPoint.rotation;
-            return true;
+
+            PooledObjectComponent instantiated = null;
+            if ((_prefabObjectPool?.Allocate(ref instantiated)) ?? false)
+            {
+                var instantiatedTransform = instantiated.transform;
+                instantiatedTransform.position = selectSpawnPoint.position;
+                instantiatedTransform.rotation = selectSpawnPoint.rotation;
+                return true;
+            }
+            return false;
         }
 
         private Transform SelectSpawnPoint()
