@@ -4,34 +4,43 @@ namespace MITHack.Robot.Spawner
 {
     public interface IPooledObject
     {
-        public delegate void PooledObjectDelegate<TSelf>(IObjectPool<TSelf> pool);
+        public delegate void PooledObjectDelegate<TSelf, out TObjectAllocContext>(IObjectPool<TSelf, TObjectAllocContext> pool) 
+            where TObjectAllocContext : struct;
 
         /// <summary>
         /// Deallocates the pooled object.
         /// </summary>
         /// <returns>True if deallocated, false otherwise.</returns>
         public void DeAllocate();
-        
+
         /// <summary>
         /// Called when the object is initialized by the pool.
         /// </summary>
         /// <param name="pool">The pool.</param>
         /// <typeparam name="TSelf">The object pool associated with the object.</typeparam>
-        public void OnInitialized<TSelf>(IObjectPool<TSelf> pool);
-        
+        /// <typeparam name="TObjectAllocContext">The allocation context.</typeparam>
+        public void OnInitialized<TSelf, TObjectAllocContext>(IObjectPool<TSelf, TObjectAllocContext> pool) 
+            where TObjectAllocContext : struct;
+
+        /// <summary>
+        /// Called when the object is allocated by the pool.
+        /// </summary>
+        /// <param name="pool">The object pool.</param>
+        /// <param name="context">The allocation context.</param>
+        /// <typeparam name="TSelf">The type of deallocated object.</typeparam>
+        /// <typeparam name="TObjectAllocContext">The allocation context.</typeparam>
+        public void OnAllocated<TSelf, TObjectAllocContext>(IObjectPool<TSelf, TObjectAllocContext> pool,
+            in TObjectAllocContext context) 
+            where TObjectAllocContext : struct;
+
         /// <summary>
         /// Called when the object is allocated by the pool.
         /// </summary>
         /// <param name="pool">The object pool.</param>
         /// <typeparam name="TSelf">The type of deallocated object.</typeparam>
-        public void OnAllocated<TSelf>(IObjectPool<TSelf> pool);
-        
-        /// <summary>
-        /// Called when the object is allocated by the pool.
-        /// </summary>
-        /// <param name="pool">The object pool.</param>
-        /// <typeparam name="TSelf">The type of deallocated object.</typeparam>
-        public void OnDeAllocated<TSelf>(IObjectPool<TSelf> pool);
+        /// <typeparam name="TObjectAllocContext">The allocation context.</typeparam>
+        public void OnDeAllocated<TSelf, TObjectAllocContext>(IObjectPool<TSelf, TObjectAllocContext> pool) 
+            where TObjectAllocContext : struct;
     }
 
     /// <summary>
@@ -51,23 +60,26 @@ namespace MITHack.Robot.Spawner
     
     public interface IObjectPool { }
 
-    public interface IObjectPool<TObject> : IObjectPool
+    public interface IObjectPool<TObject, in TObjectAllocContext> : IObjectPool
+        where TObjectAllocContext : struct
     {
         /// <summary>
         /// Allocates the object pool.
         /// </summary>
         /// <param name="obj">The object.</param>
+        /// <param name="context">The context for allocating the object.</param>
         /// <typeparam name="TObject">The type of the object.</typeparam>
         /// <returns>True or false.</returns>
-        public bool Allocate(ref TObject obj);
+        public bool Allocate(ref TObject obj, TObjectAllocContext context);
 
         /// <summary>
         /// Allocates to the object pool.
         /// </summary>
         /// <param name="obj">The object.</param>
+        /// <param name="context">The context for allocating the object.</param>
         /// <typeparam name="TInheritedObject">The inherited type of the object.</typeparam>
         /// <returns>True or false.</returns>
-        public bool Allocate<TInheritedObject>(ref TInheritedObject obj)
+        public bool Allocate<TInheritedObject>(ref TInheritedObject obj, TObjectAllocContext context)
             where TInheritedObject : TObject;
 
 
@@ -85,15 +97,17 @@ namespace MITHack.Robot.Spawner
         public void DeAllocate<TInheritedObject>(ref TInheritedObject obj)
             where TInheritedObject : TObject;
     }
-    
+
     /// <summary>
     /// Represents an instance of an object pool.
     /// </summary>
     /// <typeparam name="TObjectPoolAllocator">Represents the allocator for the object pool.</typeparam>
     /// <typeparam name="TObject">The type of object.</typeparam>
-    public class ObjectPoolInstance<TObjectPoolAllocator, TObject> : IObjectPool<TObject>
+    /// <typeparam name="TObjectAllocContext">The allocation context.</typeparam>
+    public class ObjectPoolInstance<TObjectPoolAllocator, TObject, TObjectAllocContext> : IObjectPool<TObject, TObjectAllocContext>
         where TObject : class
         where TObjectPoolAllocator : struct, IObjectPoolAllocator<TObject>
+        where TObjectAllocContext : struct
     {
         private struct SpawnedObject
         {
@@ -141,9 +155,9 @@ namespace MITHack.Robot.Spawner
             _initialized = true;
         }
 
-        public bool Allocate(ref TObject obj) => Allocate<TObject>(ref obj);
+        public bool Allocate(ref TObject obj, TObjectAllocContext context) => Allocate<TObject>(ref obj, context);
         
-        public bool Allocate<TInheritedObject>(ref TInheritedObject obj)
+        public bool Allocate<TInheritedObject>(ref TInheritedObject obj, TObjectAllocContext context)
             where TInheritedObject : TObject
         {
             if (!_initialized)
@@ -164,7 +178,7 @@ namespace MITHack.Robot.Spawner
 
             if (obj is IPooledObject pooledObject)
             {
-                pooledObject.OnAllocated(this);
+                pooledObject.OnAllocated(this, context);
             }
             return true;
         }

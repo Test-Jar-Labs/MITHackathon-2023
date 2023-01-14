@@ -75,7 +75,7 @@ namespace MITHack.Robot.Spawner
             {
             }
         }
-
+        
         #endregion
         
         [Header("Variables")] 
@@ -104,7 +104,8 @@ namespace MITHack.Robot.Spawner
         private List<Transform> spawnPoints;
 
 
-        private ObjectPoolInstance<PrefabSpawnerAllocator, PooledObjectComponent> _prefabObjectPool;
+        private ObjectPoolInstance<PrefabSpawnerAllocator, PooledObjectComponent, 
+            PooledObjectComponent.PooledObjectSpawnContext> _prefabObjectPool;
         private SpawnerState _spawnerState = SpawnerState.State_InitialDelay;
         private int _totalSpawned = 0;
         private float _totalSpawnTimeDifference = 0.0f;
@@ -116,7 +117,7 @@ namespace MITHack.Robot.Spawner
 
         private void Awake()
         {
-            _prefabObjectPool ??= new ObjectPoolInstance<PrefabSpawnerAllocator, PooledObjectComponent>(
+            _prefabObjectPool ??= new ObjectPoolInstance<PrefabSpawnerAllocator, PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext>(
                 totalPrefabs, prefab);
         }
 
@@ -186,11 +187,12 @@ namespace MITHack.Robot.Spawner
             }
 
             PooledObjectComponent instantiated = null;
-            if ((_prefabObjectPool?.Allocate(ref instantiated)) ?? false)
+            if ((_prefabObjectPool?.Allocate(ref instantiated, new PooledObjectComponent.PooledObjectSpawnContext()
+                {
+                    position = selectSpawnPoint.position,
+                    rotation = selectSpawnPoint.rotation
+                })) ?? false)
             {
-                var instantiatedTransform = instantiated.transform;
-                instantiatedTransform.position = selectSpawnPoint.position;
-                instantiatedTransform.rotation = selectSpawnPoint.rotation;
                 return true;
             }
             return false;
