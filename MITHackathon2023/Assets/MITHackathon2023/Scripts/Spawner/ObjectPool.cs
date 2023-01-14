@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using MITHack.Robot.Utils.Components;
 
 namespace MITHack.Robot.Spawner
 {
@@ -7,6 +6,12 @@ namespace MITHack.Robot.Spawner
     {
         public delegate void PooledObjectDelegate<TSelf>(IObjectPool<TSelf> pool);
 
+        /// <summary>
+        /// Deallocates the pooled object.
+        /// </summary>
+        /// <returns>True if deallocated, false otherwise.</returns>
+        public void DeAllocate();
+        
         /// <summary>
         /// Called when the object is initialized by the pool.
         /// </summary>
@@ -174,7 +179,8 @@ namespace MITHack.Robot.Spawner
                 return;
             }
 
-            if (_spawnedObjects.TryGetValue(obj, out var outValue))
+            if (_spawnedObjects.TryGetValue(obj, out var outValue)
+                && outValue.enabled)
             {
                 if (obj is IPooledObject pooledObject)
                 {

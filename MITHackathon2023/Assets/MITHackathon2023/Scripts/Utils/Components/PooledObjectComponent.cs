@@ -9,10 +9,24 @@ namespace MITHack.Robot.Utils.Components
         public IPooledObject.PooledObjectDelegate<PooledObjectComponent> allocatedEvent;
         public IPooledObject.PooledObjectDelegate<PooledObjectComponent> deallocatedEvent;
 
+        private IObjectPool<PooledObjectComponent> _currentObjectPool = null;
+
+        public IObjectPool<PooledObjectComponent> CurrentObjectPool => _currentObjectPool;
+
+        public void DeAllocate()
+        {
+            if (CurrentObjectPool != null)
+            {
+                var cpy = this;
+                CurrentObjectPool.DeAllocate(ref cpy);
+            }
+        }
+        
         public void OnInitialized<TSelf>(IObjectPool<TSelf> pool)
         {
             if (pool is IObjectPool<PooledObjectComponent> pooledObjects)
             {
+                _currentObjectPool = pooledObjects;
                 gameObject.SetActive(false);
                 initializedEvent?.Invoke(pooledObjects);
             }
