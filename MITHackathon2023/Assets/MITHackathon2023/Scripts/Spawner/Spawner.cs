@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using MITHack.Robot.Utils.Components;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Object = UnityEngine.Object;
@@ -8,6 +8,7 @@ using Random = UnityEngine.Random;
 
 namespace MITHack.Robot.Spawner
 {
+    
     public class Spawner :  MonoBehaviour
     {
         #region defines
@@ -49,6 +50,11 @@ namespace MITHack.Robot.Spawner
 
             public void DeAllocate(ref PooledObjectComponent obj)
             {
+                if (!obj)
+                {
+                    obj = null;
+                    return;
+                }
                 Object.Destroy(obj.gameObject);
                 obj = null;
             }
