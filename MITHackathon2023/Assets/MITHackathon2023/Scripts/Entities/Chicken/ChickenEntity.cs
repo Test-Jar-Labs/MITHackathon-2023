@@ -49,6 +49,8 @@ namespace MITHack.Robot.Entities
         private CollisionEventsListener3D.CollisionEventsListenerGenericDelegate<
             CollisionEventsListener3D.TriggerEventContext> _triggerEnterEvent;
 
+        private Tweener _currentMoveTweener;
+
         private PooledObjectComponent _pooledObject;
         private float _currentLifeLength = 0.0f;
 
@@ -125,29 +127,46 @@ namespace MITHack.Robot.Entities
         private void OnAllocated(IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
         {
             _currentLifeLength = maxLifeLength;
-
-            var cachedTransform = transform;
-            var position = cachedTransform.position;
-            cachedTransform.rotation = Quaternion.identity;
-            
-            var targetDirection = CalculateRandomDirection(position);
-            var randomTravelTime = Random.Range(minTravelTime, maxTravelTime); 
-            
             // Initializes the Chicken Target Pool.
             ChickenTarget.Initialize(32, targetEntity);
 
-            if (Physics.Raycast(transform.position,
-                    targetDirection, out var raycastHit, layerMask))
+            // Finds a point to travel to (shoots a raycast)
+            // if none is found, project difference of positions onto a plane with y at zero
+            // and just move it to there.
             {
-                var point = raycastHit.point;
-                var rotation = Quaternion.LookRotation(raycastHit.normal);
-                ChickenTarget.Allocate(new ChickenTarget.ChickenTargetAllocContext
+                var cachedTransform = transform;
+                var position = cachedTransform.position;
+                cachedTransform.rotation = Quaternion.identity;
+            
+                var targetDirection = CalculateRandomDirection(position);
+                var positionDown = position;
+                positionDown.y = 0.0f;
+                var difference = positionDown - position;
+                var projectionDistance = Vector3.Dot(difference, targetDirection);
+                var point = projectionDistance * targetDirection + position;
+                var normal = Vector3.up;
+            
+                if (Physics.Raycast(transform.position,
+                        targetDirection, out var raycastHit, layerMask))
                 {
-                    position = point + raycastHit.normal * targetEntityNormalOffset,
-                    rotation = rotation
-                });
-                cachedTransform.DOMove(point, randomTravelTime);
+                    point = raycastHit.point;
+                    normal = raycastHit.normal;
+                }
+                SetTarget(point, normal);   
             }
+        }
+
+        private void SetTarget(Vector3 point, Vector3 normal)
+        {
+            var randomTravelTime = Random.Range(minTravelTime, maxTravelTime); 
+            var cachedTransform = transform;
+            var rotation = Quaternion.LookRotation(normal);
+            ChickenTarget.Allocate(new ChickenTarget.ChickenTargetAllocContext
+            {
+                position = point + normal * targetEntityNormalOffset,
+                rotation = rotation
+            });
+            _currentMoveTweener = cachedTransform.DOMove(point, randomTravelTime);
         }
         
         private void OnDeAllocated(IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
@@ -159,6 +178,8 @@ namespace MITHack.Robot.Entities
                 Rigidbody.angularVelocity = Vector3.zero;
                 Rigidbody.Sleep();
             }
+            _currentMoveTweener?.Kill();
+            _currentMoveTweener = null;
         }
 
         private Vector3 CalculateRandomDirection(Vector3 position)
@@ -204,9 +225,19 @@ namespace MITHack.Robot.Entities
                 robotEntity.Kill();
                 _killedRobot = true;
             }
-            // TODO: Explode
+
+            Explode();
+            // The current movement tweener.
+            _currentMoveTweener?.Kill();
+            _currentMoveTweener = null;
         }
 
+        public void Explode()
+        {
+            // TODO: Explodes the chicken, for now deallocate
+            DeAllocate();
+        }
+        
         /// <summary>
         /// Deallocates the chicken. Equivalent to destroy/dispose.
         /// </summary>

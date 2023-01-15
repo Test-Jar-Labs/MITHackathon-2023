@@ -38,12 +38,18 @@ namespace MITHack.Robot.Entities
         [SerializeField]
         private Transform shootLocation;
 
+        [Header("References")] 
+        [SerializeField]
+        private RobotMovement robotMovement;
+        
         private ObjectPoolInstance<Prefab<PooledObjectComponent>, PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> _objectPool;
         private RobotEntityState _robotEntityState = RobotEntityState.StateAlive;
 
         private float _currentProjectileTime = 0.0f;
         
         public RobotEntityState EntityState => _robotEntityState;
+
+        public RobotMovement RobotMovement => robotMovement ??= GetComponent<RobotMovement>();
 
         protected override void Awake()
         {

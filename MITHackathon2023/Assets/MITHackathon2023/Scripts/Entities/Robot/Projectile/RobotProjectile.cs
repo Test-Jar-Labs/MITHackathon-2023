@@ -1,5 +1,4 @@
-﻿using System;
-using MITHack.Robot.Spawner;
+﻿using MITHack.Robot.Spawner;
 using MITHack.Robot.Utils.Components;
 using UnityEngine;
 
@@ -13,13 +12,15 @@ namespace MITHack.Robot.Entities.Projectile
         private float projectileSpeed = 100.0f;
         [SerializeField, Min(0.0f)]
         private float timeToDestroy = 3.0f;
-        
-        [Header("References")]
-        [SerializeField]
-        private new Rigidbody rigidbody;
 
+        [Header("References")] [SerializeField]
+        private new Rigidbody rigidbody;
+        [SerializeField]
+        private CollisionEventsListener3D collisionEventsListener;
+        
         private IPooledObject.PooledObjectDelegate<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> _allocatedEvent;
         private IPooledObject.PooledObjectDelegate<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> _deallocatedEvent;
+        private CollisionEventsListener3D.CollisionEventsListenerGenericDelegate<CollisionEventsListener3D.TriggerEventContext> _onTriggerEvent;
 
         private PooledObjectComponent _pooledObjectComponent;
         private float _currentDestroyTime = 0.0f;
@@ -31,6 +32,7 @@ namespace MITHack.Robot.Entities.Projectile
             _pooledObjectComponent = GetComponent<PooledObjectComponent>();
             _allocatedEvent = OnAllocated;
             _deallocatedEvent = OnDeallocated;
+            _onTriggerEvent = OnTriggerEvent;
         }
 
         private void OnEnable()
@@ -40,6 +42,12 @@ namespace MITHack.Robot.Entities.Projectile
                 _pooledObjectComponent.allocatedEvent += _allocatedEvent;
                 _pooledObjectComponent.deallocatedEvent += _deallocatedEvent;
             }
+
+            if (collisionEventsListener)
+            {
+                collisionEventsListener.TriggerEnterEvent
+                    += _onTriggerEvent;
+            }
         }
 
         private void OnDisable()
@@ -48,6 +56,12 @@ namespace MITHack.Robot.Entities.Projectile
             {
                 _pooledObjectComponent.allocatedEvent -= _allocatedEvent;
                 _pooledObjectComponent.deallocatedEvent -= _deallocatedEvent;
+            }
+
+            if (collisionEventsListener)
+            {
+                collisionEventsListener.TriggerEnterEvent
+                    -= _onTriggerEvent;
             }
         }
 
@@ -81,6 +95,22 @@ namespace MITHack.Robot.Entities.Projectile
                 Rigidbody.velocity = Vector3.zero;
                 Rigidbody.angularVelocity = Vector3.zero;
                 Rigidbody.Sleep();
+            }
+        }
+        
+        private void OnTriggerEvent(CollisionEventsListener3D.TriggerEventContext context)
+        {
+            var other = context.otherCollider;
+            if (!other)
+            {
+                return;
+            }
+
+            var component = other.GetComponent<ChickenEntity>()
+                            ?? other.GetComponentInParent<ChickenEntity>();
+            if (component)
+            {
+                component.Explode();
             }
         }
     }
