@@ -40,6 +40,7 @@ namespace MITHack.Robot.Game
 
         private bool _spawnersEnabled = true;
 
+        private Action<RobotEntity.ChickenKilledContext> _onChickenKilled;
         private RobotEntity.RobotEntityGenericDelegate<RobotEntity.RobotEntityStateChangeContext> _onStateChange;
 
         private RobotEntity RobotEntity => RobotEntity.Get<RobotEntity>();
@@ -63,6 +64,8 @@ namespace MITHack.Robot.Game
             base.Awake();
 
             _onStateChange = OnRobotStateChange;
+            _onChickenKilled = OnChickenKilled;
+            
             _chickensKilled = 0;
             _currentLives = totalLives;
             SetSpawnersEnabled(true);
@@ -73,6 +76,7 @@ namespace MITHack.Robot.Game
             if (RobotEntity)
             {
                 RobotEntity.StateChangedEvent += _onStateChange;
+                RobotEntity.ChickenKilledEvent += _onChickenKilled;
             }
         }
 
@@ -81,6 +85,7 @@ namespace MITHack.Robot.Game
             if (RobotEntity)
             {
                 RobotEntity.StateChangedEvent -= _onStateChange;
+                RobotEntity.ChickenKilledEvent -= _onChickenKilled;
             }
         }
 
@@ -94,6 +99,11 @@ namespace MITHack.Robot.Game
                     ResumeGameOnLifeLost();
                 }
             }
+        }
+        
+        private void OnChickenKilled(RobotEntity.ChickenKilledContext obj)
+        {
+            _chickensKilled++;
         }
         
         private void AddLives(int lives)

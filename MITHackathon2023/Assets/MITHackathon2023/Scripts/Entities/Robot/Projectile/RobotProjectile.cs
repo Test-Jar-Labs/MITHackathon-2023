@@ -7,6 +7,8 @@ namespace MITHack.Robot.Entities.Projectile
     [RequireComponent(typeof(PooledObjectComponent))]
     public class RobotProjectile : MonoBehaviour
     {
+        public System.Action<RobotEntity.ChickenKilledContext> ProjectileHitEvent;
+        
         [Header("Variables")] 
         [SerializeField, Min(0.0f)]
         private float projectileSpeed = 100.0f;
@@ -78,7 +80,7 @@ namespace MITHack.Robot.Entities.Projectile
             }
         }
 
-        private void OnAllocated(IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
+        private void OnAllocated(PooledObjectComponent pooledObject, IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
         {
             if (Rigidbody)
             {
@@ -88,7 +90,7 @@ namespace MITHack.Robot.Entities.Projectile
             }
         }
         
-        private void OnDeallocated(IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
+        private void OnDeallocated(PooledObjectComponent pooledObject, IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
         {
             var cachedTransform = transform;
             cachedTransform.position = Vector3.zero;
@@ -111,9 +113,14 @@ namespace MITHack.Robot.Entities.Projectile
 
             var component = other.GetComponent<ChickenEntity>()
                             ?? other.GetComponentInParent<ChickenEntity>();
-            if (component)
+            if (component
+                && component.isActiveAndEnabled)
             {
                 component.Explode();
+                ProjectileHitEvent?.Invoke(new RobotEntity.ChickenKilledContext()
+                {
+                    chickenEntity = component
+                });
             }
             _pooledObjectComponent.DeAllocate();
         }

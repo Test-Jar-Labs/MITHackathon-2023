@@ -155,6 +155,8 @@ MonoBehaviour:
   eflatunScenesToLoad:
   - sceneAsset: {fileID: 102900000, guid: b3f4d4376e5556d45910c7a2f94eaec1, type: 3}
     sceneAssetGuidHex: b3f4d4376e5556d45910c7a2f94eaec1
+  - sceneAsset: {fileID: 102900000, guid: 6a90a922fec55be42ae50d3c4647ed1b, type: 3}
+    sceneAssetGuidHex: 6a90a922fec55be42ae50d3c4647ed1b
   - sceneAsset: {fileID: 102900000, guid: ab58e67917740db4496b620d449af8e8, type: 3}
     sceneAssetGuidHex: ab58e67917740db4496b620d449af8e8
 --- !u!4 &1211102754

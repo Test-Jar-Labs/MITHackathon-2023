@@ -125,7 +125,8 @@ namespace MITHack.Robot.Entities
             } 
         }
 
-        private void OnAllocated(IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
+        private void OnAllocated(PooledObjectComponent pooledObject,
+            IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
         {
             _currentLifeLength = maxLifeLength;
             // Initializes the Chicken Target Pool.
@@ -170,7 +171,8 @@ namespace MITHack.Robot.Entities
             _currentMoveTweener = cachedTransform.DOMove(point, randomTravelTime);
         }
         
-        private void OnDeAllocated(IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
+        private void OnDeAllocated(PooledObjectComponent pooledObject,
+            IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
         {
             // Resets the rigidbody.
             if (Rigidbody)

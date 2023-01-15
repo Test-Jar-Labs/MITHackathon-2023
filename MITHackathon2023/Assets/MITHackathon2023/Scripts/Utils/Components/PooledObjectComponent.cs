@@ -37,7 +37,7 @@ namespace MITHack.Robot.Utils.Components
             {
                 _currentObjectPool = pooledObjects;
                 gameObject.SetActive(false);
-                initializedEvent?.Invoke(pooledObjects);
+                initializedEvent?.Invoke(this, pooledObjects);
             }
         }
 
@@ -66,7 +66,7 @@ namespace MITHack.Robot.Utils.Components
                 }
 
                 gameObject.SetActive(true);
-                allocatedEvent?.Invoke(pooledObjects);
+                allocatedEvent?.Invoke(this, pooledObjects);
             }
         }
 
@@ -76,7 +76,7 @@ namespace MITHack.Robot.Utils.Components
             if (pool is IObjectPool<PooledObjectComponent, PooledObjectSpawnContext> pooledObjects)
             {
                 gameObject.SetActive(false);
-                deallocatedEvent?.Invoke(pooledObjects);
+                deallocatedEvent?.Invoke(this, pooledObjects);
             }
         }
     }

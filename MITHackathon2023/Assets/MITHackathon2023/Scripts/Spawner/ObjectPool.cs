@@ -4,7 +4,7 @@ namespace MITHack.Robot.Spawner
 {
     public interface IPooledObject
     {
-        public delegate void PooledObjectDelegate<TSelf, out TObjectAllocContext>(IObjectPool<TSelf, TObjectAllocContext> pool) 
+        public delegate void PooledObjectDelegate<TSelf, out TObjectAllocContext>(TSelf self, IObjectPool<TSelf, TObjectAllocContext> pool) 
             where TObjectAllocContext : unmanaged;
 
         /// <summary>

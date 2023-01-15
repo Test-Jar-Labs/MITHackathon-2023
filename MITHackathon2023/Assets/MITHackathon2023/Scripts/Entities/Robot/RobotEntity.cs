@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using MITHack.Robot.Entities.Projectile;
 using MITHack.Robot.Game;
 using MITHack.Robot.Spawner;
 using MITHack.Robot.Utils;
@@ -22,12 +23,18 @@ namespace MITHack.Robot.Entities
             public RobotEntityState prev;
             public RobotEntityState next;
         }
+
+        public struct ChickenKilledContext
+        {
+            public ChickenEntity chickenEntity;
+        }
         
         public delegate void RobotEntityGenericDelegate<in TContext>(TContext context);
         
         #endregion
 
         public RobotEntityGenericDelegate<RobotEntityStateChangeContext> StateChangedEvent;
+        public System.Action<ChickenKilledContext> ChickenKilledEvent;
 
         [Header("Projectile")] 
         [SerializeField, Min(0.0f)]
@@ -50,6 +57,8 @@ namespace MITHack.Robot.Entities
         [SerializeField] 
         private List<SpriteRenderer> livesSprites;
         
+        private IPooledObject.PooledObjectDelegate<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> _onProjectileDeallocated;
+
         private ObjectPoolInstance<Prefab<PooledObjectComponent>, PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> _objectPool;
         private RobotEntityState _robotEntityState = RobotEntityState.StateAlive;
 
@@ -66,7 +75,9 @@ namespace MITHack.Robot.Entities
             _objectPool ??=
                 new ObjectPoolInstance<Prefab<PooledObjectComponent>, PooledObjectComponent,
                     PooledObjectComponent.PooledObjectSpawnContext>(64, projectilePrefab);
+            _onProjectileDeallocated = OnProjectileDeallocated;
         }
+
 
         private void Start()
         {
@@ -157,12 +168,35 @@ namespace MITHack.Robot.Entities
         {
             var location = shootLocation ? shootLocation : transform;
             PooledObjectComponent objectPooledReference = null;
-            _objectPool?.Allocate(ref objectPooledReference, new PooledObjectComponent.PooledObjectSpawnContext
+            if (_objectPool?.Allocate(ref objectPooledReference, new PooledObjectComponent.PooledObjectSpawnContext
                 {
                     position = location.position,
                     rotation = location.rotation
-                });
+                }) ?? false)
+            {
+                var robotProjectile = objectPooledReference.GetComponent<RobotProjectile>();
+                if (robotProjectile)
+                {
+                    robotProjectile.ProjectileHitEvent += ChickenKilledEvent;
+                }
+
+                objectPooledReference.deallocatedEvent += _onProjectileDeallocated;
+            }
         }
+        
+        private void OnProjectileDeallocated(PooledObjectComponent pooledObject,
+            IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
+        {
+            if (pooledObject)
+            {
+                var robotProjectile = pooledObject.GetComponent<RobotProjectile>();
+                if (robotProjectile)
+                {
+                    robotProjectile.ProjectileHitEvent -= ChickenKilledEvent;
+                }
+            }
+        }
+
         
         private void OnDrawGizmos()
         {
