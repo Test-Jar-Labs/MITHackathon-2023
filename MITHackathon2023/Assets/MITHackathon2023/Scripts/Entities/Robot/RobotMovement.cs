@@ -7,6 +7,9 @@ namespace MITHack.Robot.Entities
         [Header("Move Variables")] 
         [SerializeField, Min(0.0f)]
         private float initialMoveSpeed = 1.0f;
+        [Space] 
+        [SerializeField] 
+        private bool enableGravity = false;
 
         [Header("References")] 
         [SerializeField]
@@ -58,7 +61,14 @@ namespace MITHack.Robot.Entities
         {
             if (characterController)
             {
-                characterController.SimpleMove(deltaPosition);
+                if (enableGravity)
+                {
+                    characterController.SimpleMove(deltaPosition);
+                }
+                else
+                {
+                    characterController.Move(deltaPosition);
+                }
                 return;
             }
             var cachedTransform = transform;

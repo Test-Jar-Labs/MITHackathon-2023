@@ -6,6 +6,14 @@ namespace MITHack.Robot.Utils.UI
 {
     public class GameUI : MonoBehaviour
     {
+        [Header("Variables")] 
+        [SerializeField]
+        private bool setChildOfCamera = true;
+        
+        [Header("References")] 
+        [SerializeField]
+        private Canvas canvas;
+        
         [Header("Chicken Nuggets")] 
         [SerializeField]
         private Image counterImage;
@@ -14,6 +22,16 @@ namespace MITHack.Robot.Utils.UI
 
         private void Update()
         {
+            if (canvas)
+            {
+                canvas.worldCamera = CameraUtility.MainCamera;
+                if (setChildOfCamera)
+                {
+                    var cachedTransform = transform;
+                    cachedTransform.SetParent(canvas.worldCamera.transform);
+                }
+            }
+            
             var gameManager = GameManager.Get();
             if (gameManager)
             {
