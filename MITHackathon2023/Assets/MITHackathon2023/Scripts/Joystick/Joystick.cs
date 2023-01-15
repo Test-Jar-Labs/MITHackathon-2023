@@ -30,8 +30,8 @@ namespace MITHack.Robot
         // Update is called once per frame
         void Update()
         {
-            HorizontalAxisRaw = transform.rotation.eulerAngles.z;
-            VerticalAxisRaw = transform.rotation.eulerAngles.x;
+            HorizontalAxisRaw = transform.localRotation.eulerAngles.z;
+            VerticalAxisRaw = transform.localRotation.eulerAngles.x;
             
             if(HorizontalAxisRaw > 180)
             {
@@ -43,7 +43,7 @@ namespace MITHack.Robot
             }
             HorizontalAxis = HorizontalAxisRaw / 45;
             VerticalAxis = VerticalAxisRaw / 45;
-            Debug.Log("X:" + HorizontalAxis + ", Z:" + VerticalAxis);
+            Debug.Log("X:" + HorizontalAxisRaw + ", Z:" + VerticalAxisRaw);
         }
         private void FixedUpdate()
         {
