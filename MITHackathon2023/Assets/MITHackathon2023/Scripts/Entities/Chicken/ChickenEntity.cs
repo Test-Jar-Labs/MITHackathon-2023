@@ -1,4 +1,5 @@
-﻿using MITHack.Robot.Spawner;
+﻿using DG.Tweening;
+using MITHack.Robot.Spawner;
 using MITHack.Robot.Utils;
 using MITHack.Robot.Utils.Components;
 using UnityEngine;
@@ -18,10 +19,13 @@ namespace MITHack.Robot.Entities
         private float leftAngle = 20.0f;
         [SerializeField, Range(0.0f, 180.0f)]
         private float rightAngle = 20.0f;
-        [Space] 
-        [SerializeField, Min(0.0f)] private float minForce;
-        [SerializeField, Min(0.0f)] private float maxForce;
 
+        [Space] 
+        [SerializeField, Min(0.0f)] 
+        private float minTravelTime;
+        [SerializeField]
+        private float maxTravelTime;
+        
         [Header("Misc")] 
         [SerializeField, Min(0.0f)]
         private float targetEntityNormalOffset = 0.05f;
@@ -121,8 +125,29 @@ namespace MITHack.Robot.Entities
         private void OnAllocated(IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
         {
             _currentLifeLength = maxLifeLength;
-            ApplyForces(transform.position, out var direction);
-            SpawnTarget(in direction);
+
+            var cachedTransform = transform;
+            var position = cachedTransform.position;
+            cachedTransform.rotation = Quaternion.identity;
+            
+            var targetDirection = CalculateRandomDirection(position);
+            var randomTravelTime = Random.Range(minTravelTime, maxTravelTime); 
+            
+            // Initializes the Chicken Target Pool.
+            ChickenTarget.Initialize(32, targetEntity);
+
+            if (Physics.Raycast(transform.position,
+                    targetDirection, out var raycastHit, layerMask))
+            {
+                var point = raycastHit.point;
+                var rotation = Quaternion.LookRotation(raycastHit.normal);
+                ChickenTarget.Allocate(new ChickenTarget.ChickenTargetAllocContext
+                {
+                    position = point + raycastHit.normal * targetEntityNormalOffset,
+                    rotation = rotation
+                });
+                cachedTransform.DOMove(point, randomTravelTime);
+            }
         }
         
         private void OnDeAllocated(IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
@@ -133,41 +158,6 @@ namespace MITHack.Robot.Entities
                 Rigidbody.velocity = Vector3.zero;
                 Rigidbody.angularVelocity = Vector3.zero;
                 Rigidbody.Sleep();
-            }
-        }
-
-        private bool ApplyForces(Vector3 position, out Vector3 targetDirection)
-        {
-            if (!Rigidbody)
-            {
-                targetDirection = default;
-                return false;
-            }
-
-            var cachedTransform = transform;
-            cachedTransform.position = position;
-            cachedTransform.rotation = Quaternion.identity;
-            
-            targetDirection = CalculateRandomDirection(position);
-            var randomForce = Random.Range(minForce, maxForce);
-            Rigidbody.AddRelativeForce(targetDirection * randomForce, ForceMode.Impulse);
-            return true;
-        }
-
-        private void SpawnTarget(in Vector3 direction)
-        {
-            // Initializes the Chicken Target Pool.
-            ChickenTarget.Initialize(32, targetEntity);
-
-            if (Physics.Raycast(transform.position,
-                    direction, out var raycastHit, layerMask))
-            {
-                var rotation = Quaternion.LookRotation(raycastHit.normal);
-                ChickenTarget.Allocate(new ChickenTarget.ChickenTargetAllocContext
-                {
-                    position = raycastHit.point + raycastHit.normal * targetEntityNormalOffset,
-                    rotation = rotation
-                });
             }
         }
 
@@ -237,7 +227,7 @@ namespace MITHack.Robot.Entities
 
         private void OnValidate()
         {
-            maxForce = Mathf.Max(maxForce, minForce);
+            maxTravelTime = Mathf.Max(maxTravelTime, minTravelTime);
         }
     }
 }
