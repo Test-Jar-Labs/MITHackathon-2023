@@ -2,15 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using MITHack.Robot.Utils;
+using MITHack.Robot.Entities;
 
 namespace MITHack.Robot
 {
     public class Joystick : MonoBehaviour
     {
-        public float HorizontalAxis;
-        public float VerticalAxis;
-        public float HorizontalAxisRaw;
-        public float VerticalAxisRaw;
+        private float HorizontalAxis;
+        private float VerticalAxis;
+        private float HorizontalAxisRaw;
+        private float VerticalAxisRaw;
 
         public float HorizontalAxisThreshold;
         public float VerticalAxisThreshold;
@@ -19,12 +20,20 @@ namespace MITHack.Robot
         public float RatePerFixedUpdate;
         public float OGRatePerFixedUpdate = 25f;
 
+        private RobotMovement RobotMovement;
+
         // Start is called before the first frame update
         void Start()
         {
             HorizontalAxisRaw = transform.rotation.eulerAngles.x;
             VerticalAxisRaw = transform.rotation.eulerAngles.z;
             RatePerFixedUpdate = OGRatePerFixedUpdate;
+            var Robot = RobotEntity.Get();
+            if (Robot != null)
+            {
+                RobotMovement = Robot.GetComponent<RobotMovement>();
+            }
+
         }
 
         // Update is called once per frame
@@ -43,7 +52,22 @@ namespace MITHack.Robot
             }
             HorizontalAxis = HorizontalAxisRaw / 45;
             VerticalAxis = VerticalAxisRaw / 45;
-            Debug.Log("X:" + HorizontalAxisRaw + ", Z:" + VerticalAxisRaw);
+            Debug.Log("X:" + HorizontalAxis + ", Z:" + VerticalAxis);
+
+            if (HorizontalAxis < DeadZone && HorizontalAxis > -DeadZone)
+            {
+                HorizontalAxis = 0;
+            }
+            if (VerticalAxis < DeadZone && VerticalAxis > -DeadZone)
+            {
+                VerticalAxis = 0;
+            }
+            
+
+            RobotMovement.SetDirection(new Vector2(-HorizontalAxis, VerticalAxis));
+
+
+
         }
         private void FixedUpdate()
         {
