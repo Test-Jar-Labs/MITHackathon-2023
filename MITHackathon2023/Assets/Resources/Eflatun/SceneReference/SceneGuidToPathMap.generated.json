@@ -1,4 +1,10 @@
 {
+  "4cab3aa14491da2409df506deb8b4484": "Assets/DynamicDecals/Demos/0 Showcase/Showcase.unity",
+  "570ec458ee0c82c478241bf6fe054481": "Assets/DynamicDecals/Demos/1 Minions/Minions.unity",
+  "b1ce4d0dd925d104f8ab17b0666afd9a": "Assets/DynamicDecals/Demos/2 Goo/Goo.unity",
+  "e089505c0cf0ec54ab23ebafa1cc057b": "Assets/DynamicDecals/Demos/3 VR/VR.unity",
+  "b0989f0aa3e02cf449eaf5041c85664b": "Assets/DynamicDecals/Demos/4 Classic/Classic.unity",
+  "9fc0d4010bbf28b4594072e72b8655ab": "Assets/DynamicDecals/Scenes/SampleScene.unity",
   "1b75a629da2b33344afddc7868b6b810": "Assets/Feel/FeelDemos/Barbarians/FeelBarbarians.unity",
   "5c2950ce60a0fb64ead6ef839a3becd2": "Assets/Feel/FeelDemos/Blob/FeelBlob.unity",
   "f95231205f5c99c479eb98d562d4108f": "Assets/Feel/FeelDemos/Bounce/FeelBounce.unity",
@@ -58,6 +64,7 @@
   "14521a6216004ed45b63341769ab8e59": "Assets/Lynx/Samples/HandTracking/3. QuickMenu&MiniLauncher/Scenes/QuickMenu & MiniLauncher.unity",
   "b3f4d4376e5556d45910c7a2f94eaec1": "Assets/MITHackathon2023/Scene/Environment_Scene.unity",
   "b92a568f1a4c18247b7122a4bc942f89": "Assets/MITHackathon2023/Scene/Game_Master.unity",
+  "fbe17937a1b4bf54590ae6848b47f9fb": "Assets/MITHackathon2023/Scene/TestDecals.unity",
   "a2359882dd6b7c0439245b16854ba22e": "Assets/MITHackathon2023/Scene/XRControlScene.unity",
   "ab58e67917740db4496b620d449af8e8": "Assets/MITHackathon2023/Scene/XRGameControlScene.unity",
   "f17f1d3b24ee55249bf6fcd7582e295d": "Assets/Samples/Ultraleap Tracking/6.4.0/Examples/1. XR Examples/1. Getting Started/Introduction to Hand Tracking in XR.unity",

@@ -409,6 +409,9 @@ MonoBehaviour:
   targetEntity:
     prefab: {fileID: 7452833755102505496, guid: 66de278629ecee740afad4fac5949b40,
       type: 3}
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 55
   rigidbody: {fileID: -4179838290756318052}
   collisionEventsListener: {fileID: 5998641077902515819}
 --- !u!54 &-4179838290756318052

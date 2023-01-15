@@ -1,9 +1,7 @@
-﻿using System;
-using MITHack.Robot.Spawner;
+﻿using MITHack.Robot.Spawner;
 using MITHack.Robot.Utils;
 using MITHack.Robot.Utils.Components;
 using UnityEngine;
-using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 
@@ -30,6 +28,9 @@ namespace MITHack.Robot.Entities
         private float targetEntityNormalOffset = 0.05f;
         [SerializeField]
         private Prefab<ChickenTarget> targetEntity;
+        [Space] 
+        [SerializeField] 
+        private LayerMask layerMask;
 
         [Header("References")] 
         [SerializeField]
@@ -146,7 +147,7 @@ namespace MITHack.Robot.Entities
 
             var cachedTransform = transform;
             cachedTransform.position = position;
-            cachedTransform.rotation = Quaternion.identity;;
+            cachedTransform.rotation = Quaternion.identity;
             
             targetDirection = CalculateRandomDirection(position);
             var randomForce = Random.Range(minForce, maxForce);
@@ -160,7 +161,7 @@ namespace MITHack.Robot.Entities
             ChickenTarget.Initialize(32, targetEntity);
 
             if (Physics.Raycast(transform.position,
-                    direction, out var raycastHit))
+                    direction, out var raycastHit, layerMask))
             {
                 var rotation = Quaternion.LookRotation(raycastHit.normal);
                 ChickenTarget.Allocate(new ChickenTarget.ChickenTargetAllocContext
