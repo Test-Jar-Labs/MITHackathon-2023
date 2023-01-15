@@ -62,8 +62,8 @@ MonoBehaviour:
   maxLifeLength: 5
   leftAngle: 20
   rightAngle: 20
-  minForce: 1
-  maxForce: 10
+  minTravelTime: 2
+  maxTravelTime: 5
   targetEntityNormalOffset: 0.05
   targetEntity:
     prefab: {fileID: 7452833755102505496, guid: 66de278629ecee740afad4fac5949b40,
