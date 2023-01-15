@@ -73,6 +73,8 @@ MonoBehaviour:
     m_Bits: 55
   rigidbody: {fileID: -4179838290756318052}
   collisionEventsListener: {fileID: 5998641077902515819}
+  explosionPrefab: {fileID: 5545628001480159355, guid: 1741424ed2c07c14897d79e13e7f5af1,
+    type: 3}
 --- !u!54 &-4179838290756318052
 Rigidbody:
   m_ObjectHideFlags: 0

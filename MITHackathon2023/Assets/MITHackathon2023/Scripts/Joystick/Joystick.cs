@@ -20,7 +20,25 @@ namespace MITHack.Robot
         public float RatePerFixedUpdate;
         public float OGRatePerFixedUpdate = 25f;
 
-        private RobotMovement RobotMovement;
+        private RobotMovement _robotMovement;
+
+        private RobotMovement RobotMovement
+        {
+            get
+            {
+                if (_robotMovement)
+                {
+                    return _robotMovement;
+                }
+                var robot = RobotEntity.Get();
+                if (robot)
+                {
+                    _robotMovement = robot.RobotMovement;
+                }
+                return _robotMovement;
+            }
+        }
+        
 
         // Start is called before the first frame update
         void Start()
@@ -28,12 +46,6 @@ namespace MITHack.Robot
             HorizontalAxisRaw = transform.rotation.eulerAngles.x;
             VerticalAxisRaw = transform.rotation.eulerAngles.z;
             RatePerFixedUpdate = OGRatePerFixedUpdate;
-            var Robot = RobotEntity.Get();
-            if (Robot != null)
-            {
-                RobotMovement = Robot.GetComponent<RobotMovement>();
-            }
-
         }
 
         // Update is called once per frame
@@ -63,12 +75,12 @@ namespace MITHack.Robot
                 VerticalAxis = 0;
             }
             
-
-            RobotMovement.SetDirection(new Vector2(-HorizontalAxis, VerticalAxis));
-
-
-
+            if (RobotMovement)
+            {
+                RobotMovement.SetDirection(new Vector2(-HorizontalAxis, VerticalAxis));
+            }
         }
+        
         private void FixedUpdate()
         {
             if (RatePerFixedUpdate > 0)
@@ -78,7 +90,5 @@ namespace MITHack.Robot
             }
             RatePerFixedUpdate -= 1;
         }
-        
-
     }
 }
