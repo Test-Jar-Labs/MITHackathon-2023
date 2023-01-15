@@ -26,6 +26,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/MITHackathon2023/Scene/XRControlScene.unity
     guid: a2359882dd6b7c0439245b16854ba22e
+  - enabled: 0
+    path: Assets/MITHackathon2023/Scene/XRGameControlScene.unity
+    guid: ab58e67917740db4496b620d449af8e8
   m_configObjects:
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: f1d9ce10dfda5ae4db41c7e048f7aaa8,
       type: 2}

@@ -6,6 +6,7 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
+
 namespace MITHack.Robot.Entities
 {
     [RequireComponent(typeof(PooledObjectComponent))]
@@ -213,6 +214,8 @@ namespace MITHack.Robot.Entities
                 robotEntity.Kill();
                 _killedRobot = true;
             }
+
+            
             // TODO: Explode
         }
 
