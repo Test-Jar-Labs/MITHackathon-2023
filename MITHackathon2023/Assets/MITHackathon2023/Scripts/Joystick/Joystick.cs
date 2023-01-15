@@ -1,0 +1,60 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using MITHack.Robot.Utils;
+
+namespace MITHack.Robot
+{
+    public class Joystick : MonoBehaviour
+    {
+        public float HorizontalAxis;
+        public float VerticalAxis;
+        public float HorizontalAxisRaw;
+        public float VerticalAxisRaw;
+
+        public float HorizontalAxisThreshold;
+        public float VerticalAxisThreshold;
+        
+        public float DeadZone = 0.1f;
+        public float RatePerFixedUpdate;
+        public float OGRatePerFixedUpdate = 25f;
+
+        // Start is called before the first frame update
+        void Start()
+        {
+            HorizontalAxisRaw = transform.rotation.eulerAngles.x;
+            VerticalAxisRaw = transform.rotation.eulerAngles.z;
+            RatePerFixedUpdate = OGRatePerFixedUpdate;
+        }
+
+        // Update is called once per frame
+        void Update()
+        {
+            HorizontalAxisRaw = transform.rotation.eulerAngles.z;
+            VerticalAxisRaw = transform.rotation.eulerAngles.x;
+            
+            if(HorizontalAxisRaw > 180)
+            {
+                HorizontalAxisRaw -= 360;
+            }
+            if (VerticalAxisRaw > 180)
+            {
+                VerticalAxisRaw -= 360;
+            }
+            HorizontalAxis = HorizontalAxisRaw / 45;
+            VerticalAxis = VerticalAxisRaw / 45;
+            Debug.Log("X:" + HorizontalAxis + ", Z:" + VerticalAxis);
+        }
+        private void FixedUpdate()
+        {
+            if (RatePerFixedUpdate > 0)
+            {
+                one_dof_twist_publisher.publish_control(VerticalAxisRaw, HorizontalAxisRaw);
+                RatePerFixedUpdate = OGRatePerFixedUpdate;
+            }
+            RatePerFixedUpdate -= 1;
+        }
+        
+
+    }
+}
