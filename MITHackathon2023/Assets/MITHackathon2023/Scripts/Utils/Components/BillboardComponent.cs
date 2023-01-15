@@ -17,8 +17,18 @@ namespace MITHack.Robot.Utils
                 return null;
             }
         }
-        
+
+        private void OnEnable()
+        {
+            UpdateBillboard();
+        }
+
         private void Update()
+        {
+            UpdateBillboard();
+        }
+
+        private void UpdateBillboard()
         {
             var cachedTransform = transform;
             if (Target)

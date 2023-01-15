@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using MITHack.Robot.Game;
 using MITHack.Robot.Spawner;
 using MITHack.Robot.Utils;
@@ -41,6 +41,14 @@ namespace MITHack.Robot.Entities
         [Header("References")] 
         [SerializeField]
         private RobotMovement robotMovement;
+
+        [Header("UI")] 
+        [SerializeField]
+        private Sprite lifeSprite;
+        [SerializeField]
+        private Sprite noLifeSprite;
+        [SerializeField] 
+        private List<SpriteRenderer> livesSprites;
         
         private ObjectPoolInstance<Prefab<PooledObjectComponent>, PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> _objectPool;
         private RobotEntityState _robotEntityState = RobotEntityState.StateAlive;
@@ -73,6 +81,8 @@ namespace MITHack.Robot.Entities
 
         private void Update()
         {
+            UpdateLives();
+            
             switch (EntityState)
             {
                 case RobotEntityState.StateAlive:
@@ -112,8 +122,30 @@ namespace MITHack.Robot.Entities
                 return;
             }
             SetState(RobotEntityState.StateDead);
-            // TODO: Animation
             Revive();
+        }
+
+        private void UpdateLives()
+        {
+            var gameManager = GameManager.Get();
+            if (!gameManager)
+            {
+                foreach (var sprite in livesSprites)
+                {
+                    if (!sprite) continue;
+                    sprite.enabled = false;
+                }
+                return;
+            }
+
+            var currentLives = gameManager.CurrentLives;
+            for (var spriteLifeIndex = 0; spriteLifeIndex < livesSprites.Count; ++spriteLifeIndex)
+            {
+                var sprite = livesSprites[spriteLifeIndex];
+                if (!sprite) continue;
+                var associatedLife = spriteLifeIndex + 1;
+                sprite.sprite = associatedLife <= currentLives ? lifeSprite : noLifeSprite;
+            }
         }
 
         public void Revive()

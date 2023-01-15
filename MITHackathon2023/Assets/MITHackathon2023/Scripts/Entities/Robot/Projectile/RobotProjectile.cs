@@ -90,6 +90,9 @@ namespace MITHack.Robot.Entities.Projectile
         
         private void OnDeallocated(IObjectPool<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> pool)
         {
+            var cachedTransform = transform;
+            cachedTransform.position = Vector3.zero;
+            
             if (Rigidbody)
             {
                 Rigidbody.velocity = Vector3.zero;
@@ -112,6 +115,7 @@ namespace MITHack.Robot.Entities.Projectile
             {
                 component.Explode();
             }
+            _pooledObjectComponent.DeAllocate();
         }
     }
 }
