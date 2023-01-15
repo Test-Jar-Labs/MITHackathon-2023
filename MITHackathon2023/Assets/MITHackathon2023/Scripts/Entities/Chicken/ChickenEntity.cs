@@ -3,6 +3,7 @@ using MITHack.Robot.Spawner;
 using MITHack.Robot.Utils;
 using MITHack.Robot.Utils.Components;
 using UnityEngine;
+using MoreMountains.Feedbacks;
 using Random = UnityEngine.Random;
 
 
@@ -41,7 +42,9 @@ namespace MITHack.Robot.Entities
         private new Rigidbody rigidbody;
         [SerializeField]
         private CollisionEventsListener3D collisionEventsListener;
-        
+        [SerializeField]
+        private GameObject explosionPrefab;
+
         private IPooledObject.PooledObjectDelegate<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> _allocatedDelegate;
         private IPooledObject.PooledObjectDelegate<PooledObjectComponent, PooledObjectComponent.PooledObjectSpawnContext> _deallocatedDelegate;
 
@@ -56,7 +59,7 @@ namespace MITHack.Robot.Entities
         private float _currentLifeLength = 0.0f;
 
         private bool _killedRobot = false;
-
+        
         private Rigidbody Rigidbody => rigidbody ??= GetComponent<Rigidbody>();
         
         private void Awake()
@@ -235,7 +238,7 @@ namespace MITHack.Robot.Entities
 
         public void Explode()
         {
-            // TODO: Explodes the chicken, for now deallocate
+            Instantiate(explosionPrefab, transform.position, Quaternion.identity);
             DeAllocate();
         }
         
