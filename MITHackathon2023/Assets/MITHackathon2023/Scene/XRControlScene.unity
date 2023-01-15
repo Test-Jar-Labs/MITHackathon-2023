@@ -1481,7 +1481,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &572507468
 Transform:
   m_ObjectHideFlags: 0
@@ -1898,7 +1898,7 @@ PrefabInstance:
     - target: {fileID: 5270838610523157747, guid: d1c00f89ef60a3446ad9eef2d361e2a1,
         type: 3}
       propertyPath: trackingSource
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5270838610523157748, guid: d1c00f89ef60a3446ad9eef2d361e2a1,
         type: 3}
@@ -5644,7 +5644,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: f1723d8f300c94c4184360bfd5efd0a4,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -0.317
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: f1723d8f300c94c4184360bfd5efd0a4,
         type: 3}
@@ -5695,7 +5695,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 5be834914badb7c4d8392081cb8b673c, type: 2}
+      objectReference: {fileID: 2100000, guid: 106b76589e318944486ef81cb585cbdb, type: 2}
     - target: {fileID: 592664080621265513, guid: f1723d8f300c94c4184360bfd5efd0a4,
         type: 3}
       propertyPath: m_LocalScale.y
@@ -5715,7 +5715,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Materials.Array.data[0]
       value: 
-      objectReference: {fileID: 2100000, guid: 5be834914badb7c4d8392081cb8b673c, type: 2}
+      objectReference: {fileID: 2100000, guid: 106b76589e318944486ef81cb585cbdb, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f1723d8f300c94c4184360bfd5efd0a4, type: 3}
 --- !u!4 &1326654240 stripped
@@ -5830,7 +5830,7 @@ ConfigurableJoint:
   m_Anchor: {x: 0, y: -0.1, z: 0}
   m_Axis: {x: 1, y: 0, z: 0}
   m_AutoConfigureConnectedAnchor: 1
-  m_ConnectedAnchor: {x: 0, y: -0.24515, z: -0.06299999}
+  m_ConnectedAnchor: {x: -0.317, y: -0.24515, z: -0.06299999}
   serializedVersion: 2
   m_SecondaryAxis: {x: 1, y: 0, z: 0}
   m_XMotion: 0
