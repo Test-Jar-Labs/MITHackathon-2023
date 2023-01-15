@@ -54,7 +54,8 @@ namespace MITHack.Robot.Utils
 
         void IObjectPoolAllocator<TComponent>.DeAllocate(ref TComponent obj)
         {
-            if (obj is Component c)
+            if (obj is Component c
+                && c)
             {
                 Object.Destroy(c.gameObject);
                 obj = default;
