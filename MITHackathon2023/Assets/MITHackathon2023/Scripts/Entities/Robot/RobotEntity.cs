@@ -11,8 +11,8 @@ namespace MITHack.Robot.Entities
         
         public enum RobotEntityState
         {
-            State_Alive,
-            State_Dead
+            StateAlive,
+            StateDead
         }
 
         public struct RobotEntityStateChangeContext
@@ -28,7 +28,7 @@ namespace MITHack.Robot.Entities
         public RobotEntityGenericDelegate<RobotEntityStateChangeContext> StateChangedEvent;
 
 
-        private RobotEntityState _robotEntityState = RobotEntityState.State_Alive;
+        private RobotEntityState _robotEntityState = RobotEntityState.StateAlive;
 
         public RobotEntityState EntityState => _robotEntityState;
         
@@ -48,18 +48,18 @@ namespace MITHack.Robot.Entities
         
         public void Kill()
         {
-            if (EntityState != RobotEntityState.State_Alive)
+            if (EntityState != RobotEntityState.StateAlive)
             {
                 return;
             }
-            SetState(RobotEntityState.State_Dead);
+            SetState(RobotEntityState.StateDead);
             // TODO: Animation
             Revive();
         }
 
         public void Revive()
         {
-            SetState(RobotEntityState.State_Alive);
+            SetState(RobotEntityState.StateAlive);
         }
 
         private void OnDrawGizmos()

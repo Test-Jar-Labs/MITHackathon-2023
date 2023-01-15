@@ -137,7 +137,7 @@ namespace MITHack.Robot.Game
 
         private void OnRobotStateChange(RobotEntity.RobotEntityStateChangeContext context)
         {
-            if (context.next == RobotEntity.RobotEntityState.State_Dead)
+            if (context.next == RobotEntity.RobotEntityState.StateDead)
             {
                 StopGameOnLifeLost();
             }
